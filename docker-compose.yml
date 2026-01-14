@@ -1,0 +1,50 @@
+# docker-compose.yml - Adaya v2 Production
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: adaya-v2-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-adaya}
+      POSTGRES_USER: ${POSTGRES_USER:-adaya}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-adaya}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Application Next.js
+  web:
+    build: .
+    container_name: adaya-v2-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-adaya}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-adaya}
+      NEXTAUTH_URL: https://${HOSTNAME}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET requis}
+    networks:
+      - internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adaya-v2.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.adaya-v2.entrypoints=websecure"
+      - "traefik.http.routers.adaya-v2.tls.certresolver=le"
+      - "traefik.http.services.adaya-v2.loadbalancer.server.port=3000"
+
+networks:
+  internal:
+  proxy:
+    external: true
+
+volumes:
+  postgres_data:

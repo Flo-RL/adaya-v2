@@ -1,0 +1,52 @@
+// Prisma Schema - Adaya v2
+// Documentation: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MODELES
+// ============================================
+
+// Utilisateur (acheteur ou marchand)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relation: un marchand peut avoir plusieurs produits
+  products Product[]
+}
+
+// Produit vendu par un marchand
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation: appartient à un marchand
+  merchant   User   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId String
+}
+
+// Rôles utilisateur
+enum Role {
+  USER     // Acheteur simple
+  MERCHANT // Vendeur
+  ADMIN    // Administrateur
+}
