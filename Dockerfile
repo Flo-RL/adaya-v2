@@ -1,6 +1,9 @@
 # Dockerfile pour Adaya v2 - Next.js
 FROM node:20-alpine AS base
 
+# Installer OpenSSL pour Prisma
+RUN apk add --no-cache openssl
+
 # 1. Installer les dépendances
 FROM base AS deps
 WORKDIR /app

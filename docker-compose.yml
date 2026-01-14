@@ -11,6 +11,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"  # Exposé sur localhost:5433 pour éviter conflit
     networks:
       - internal
     healthcheck:
@@ -36,6 +38,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.adaya-v2.rule=Host(`${HOSTNAME}`)"
       - "traefik.http.routers.adaya-v2.entrypoints=websecure"
       - "traefik.http.routers.adaya-v2.tls.certresolver=le"
