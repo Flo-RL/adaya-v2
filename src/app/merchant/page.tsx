@@ -2,8 +2,13 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
-import { getMerchantProducts, deleteProduct } from "@/actions/products";
+import { getMerchantProducts } from "@/actions/products";
 import DeleteButton from "./DeleteButton";
+
+// Force le rendu dynamique
+export const dynamic = "force-dynamic";
+
+type Product = Awaited<ReturnType<typeof getMerchantProducts>>[number];
 
 export default async function MerchantPage() {
   const session = await getServerSession(authOptions);
@@ -36,7 +41,7 @@ export default async function MerchantPage() {
         <StatCard title="Produits" value={products.length.toString()} />
         <StatCard
           title="Publiés"
-          value={products.filter((p) => p.published).length.toString()}
+          value={products.filter((p: Product) => p.published).length.toString()}
         />
         <StatCard title="Ventes" value="0" subtitle="Bientôt disponible" />
       </div>
@@ -73,7 +78,7 @@ export default async function MerchantPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {products.map((product) => (
+              {products.map((product: Product) => (
                 <tr key={product.id}>
                   <td className="px-6 py-4">
                     <div className="font-medium text-gray-900">{product.name}</div>

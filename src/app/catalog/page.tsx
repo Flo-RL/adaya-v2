@@ -1,5 +1,10 @@
 import { getPublishedProducts } from "@/actions/products";
 
+// Force le rendu dynamique (pas de pré-rendu statique)
+export const dynamic = "force-dynamic";
+
+type Product = Awaited<ReturnType<typeof getPublishedProducts>>[number];
+
 export default async function CatalogPage() {
   const products = await getPublishedProducts();
 
@@ -15,7 +20,7 @@ export default async function CatalogPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => (
+          {products.map((product: Product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -23,15 +28,6 @@ export default async function CatalogPage() {
     </div>
   );
 }
-
-type Product = {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  image: string | null;
-  merchant: { name: string | null };
-};
 
 function ProductCard({ product }: { product: Product }) {
   return (
